@@ -1,0 +1,25 @@
+{
+  "name": "BovineLabs.Timeline.Parenting",
+  "rootNamespace": "BovineLabs.Timeline.Parenting",
+  "references": [
+    "Unity.Burst",
+    "Unity.Collections",
+    "Unity.Entities",
+    "Unity.Mathematics",
+    "Unity.Transforms",
+    "BovineLabs.Core",
+    "BovineLabs.Core.Extensions",
+    "BovineLabs.Timeline",
+    "BovineLabs.Timeline.Core",
+    "BovineLabs.Timeline.Data"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": true,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

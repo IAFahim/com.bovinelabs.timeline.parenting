@@ -1,0 +1,29 @@
+{
+  "name": "BovineLabs.Timeline.Parenting.Authoring",
+  "rootNamespace": "BovineLabs.Timeline.Parenting.Authoring",
+  "references": [
+    "Unity.Burst",
+    "Unity.Collections",
+    "Unity.Entities",
+    "Unity.Entities.Hybrid",
+    "Unity.Mathematics",
+    "Unity.Timeline",
+    "Unity.Transforms",
+    "BovineLabs.Core.Authoring",
+    "BovineLabs.Timeline.Authoring",
+    "BovineLabs.Timeline.Core.Authoring",
+    "BovineLabs.Timeline.Data",
+    "BovineLabs.Timeline.Parenting"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": true,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [
+    "UNITY_EDITOR"
+  ],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
