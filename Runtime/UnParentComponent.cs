@@ -3,9 +3,9 @@ using Unity.Transforms;
 
 namespace BovineLabs.Timeline.Parenting
 {
-    public struct UnParentComponent : IComponentData
+    public struct DetachFromParentState : IComponentData
     {
-        public Entity LastParent;
+        public Entity RuntimeParent;
         public LocalTransform OriginalLocalTransform;
     }
 }

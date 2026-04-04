@@ -7,11 +7,11 @@ using UnityEngine.Timeline;
 namespace BovineLabs.Timeline.Parenting.Authoring
 {
     [Serializable]
-    [TrackClipType(typeof(UnParentingClip))]
+    [TrackClipType(typeof(TemporaryDetachClip))]
     [TrackColor(0.1f, 0.6f, 0.6f)]
     [TrackBindingType(typeof(GameObject))]
-    [DisplayName("BovineLabs/Timeline/Transform/Parenting (DOTS)")]
-    public class ParentingTrack : DOTSTrack
+    [DisplayName("BovineLabs/Timeline/" + nameof(TemporaryDetachTrack))]
+    public class TemporaryDetachTrack : DOTSTrack
     {
     }
 }

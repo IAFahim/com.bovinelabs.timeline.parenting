@@ -1,6 +1,6 @@
 {
   "name": "BovineLabs.Timeline.Parenting.Authoring",
-  "rootNamespace": "BovineLabs.Timeline.Parenting.Authoring",
+  "rootNamespace": "",
   "references": [
     "Unity.Burst",
     "Unity.Collections",

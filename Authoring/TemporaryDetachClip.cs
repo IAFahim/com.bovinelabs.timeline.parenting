@@ -1,25 +1,25 @@
-using Unity.Transforms;
 using BovineLabs.Timeline.Authoring;
-using BovineLabs.Timeline.Parenting;
 using Unity.Entities;
-using UnityEngine;
+using Unity.Transforms;
 using UnityEngine.Timeline;
 
 namespace BovineLabs.Timeline.Parenting.Authoring
 {
-    public class UnParentingClip : DOTSClip, ITimelineClipAsset
+    public class TemporaryDetachClip : DOTSClip, ITimelineClipAsset
     {
         public override double duration => 1;
         public ClipCaps clipCaps => ClipCaps.Looping;
 
         public override void Bake(Entity clipEntity, BakingContext context)
         {
-            var parent = (context.Director.GetGenericBinding(context.Track) as GameObject).transform.parent;
-            context.Baker.AddComponent(clipEntity, new UnParentComponent
+            // We do NOT guess the parent here anymore. 
+            // We just add an empty state to hold the runtime data.
+            context.Baker.AddComponent(clipEntity, new DetachFromParentState
             {
-                LastParent = context.Baker.GetEntity(parent, TransformUsageFlags.None),
+                RuntimeParent = Entity.Null,
                 OriginalLocalTransform = LocalTransform.Identity
             });
+
             base.Bake(clipEntity, context);
         }
     }
