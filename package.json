@@ -20,5 +20,12 @@
         "timeline",
         "ecs",
         "physics"
+    ],
+    "samples": [
+        {
+            "displayName": "Parenting",
+            "description": "Example scene showing temporary detach/reparent via timeline tracks.",
+            "path": "Samples~/Parenting"
+        }
     ]
 }
