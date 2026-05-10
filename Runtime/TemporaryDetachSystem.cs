@@ -1,4 +1,3 @@
-using BovineLabs.Timeline.Core;
 using BovineLabs.Timeline.Data;
 using Unity.Burst;
 using Unity.Collections;
@@ -13,12 +12,12 @@ namespace BovineLabs.Timeline.Parenting
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
-            var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
+            var ecb = new EntityCommandBuffer(Allocator.TempJob);
+            var ecbWriter = ecb.AsParallelWriter();
             
             state.Dependency = new DetachFromParentJob
             {
-                ECB = ecb,
+                ECB = ecbWriter,
                 LocalToWorldLookup = SystemAPI.GetComponentLookup<LocalToWorld>(true),
                 LocalTransformLookup = SystemAPI.GetComponentLookup<LocalTransform>(true),
                 ParentLookup = SystemAPI.GetComponentLookup<Parent>(true)
@@ -26,8 +25,12 @@ namespace BovineLabs.Timeline.Parenting
 
             state.Dependency = new ReattachToParentJob
             {
-                ECB = ecb
+                ECB = ecbWriter
             }.ScheduleParallel(state.Dependency);
+
+            state.Dependency.Complete();
+            ecb.Playback(state.EntityManager);
+            ecb.Dispose();
         }
 
         [BurstCompile]
@@ -43,23 +46,27 @@ namespace BovineLabs.Timeline.Parenting
             private void Execute([ChunkIndexInQuery] int chunkIndex, ref DetachFromParentState state, in TrackBinding binding)
             {
                 var target = binding.Value;
+
                 if (!ParentLookup.TryGetComponent(target, out var parent))
                 {
                     state.RuntimeParent = Entity.Null;
                     return;
                 }
+
                 state.RuntimeParent = parent.Value;
+
                 if (LocalTransformLookup.TryGetComponent(target, out var originalLT))
                 {
                     state.OriginalLocalTransform = originalLT;
                 }
+
                 if (LocalToWorldLookup.TryGetComponent(target, out var targetLtw))
                 {
-                    targetLtw.Value.ExtractLocalTransform(out var worldTransform);
+                    var worldTransform = LocalTransform.FromMatrix(targetLtw.Value);
                     ECB.SetComponent(chunkIndex, target, worldTransform);
                 }
+
                 ECB.RemoveComponent<Parent>(chunkIndex, target);
-                ECB.RemoveComponent<PreviousParent>(chunkIndex, target);
             }
         }
 
@@ -73,8 +80,12 @@ namespace BovineLabs.Timeline.Parenting
             private void Execute([ChunkIndexInQuery] int chunkIndex, in DetachFromParentState state, in TrackBinding binding)
             {
                 var target = binding.Value;
-                ECB.SetComponent(chunkIndex, target, state.OriginalLocalTransform);
-                ECB.AddComponent(chunkIndex, target, new Parent { Value = state.RuntimeParent });
+
+                if (state.RuntimeParent != Entity.Null)
+                {
+                    ECB.SetComponent(chunkIndex, target, state.OriginalLocalTransform);
+                    ECB.AddComponent(chunkIndex, target, new Parent { Value = state.RuntimeParent });
+                }
             }
         }
     }
