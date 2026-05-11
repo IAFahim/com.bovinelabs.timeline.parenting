@@ -14,7 +14,7 @@ namespace BovineLabs.Timeline.Parenting
         {
             var ecb = new EntityCommandBuffer(Allocator.TempJob);
             var ecbWriter = ecb.AsParallelWriter();
-            
+
             state.Dependency = new DetachFromParentJob
             {
                 ECB = ecbWriter,
@@ -43,7 +43,8 @@ namespace BovineLabs.Timeline.Parenting
             [ReadOnly] public ComponentLookup<LocalTransform> LocalTransformLookup;
             [ReadOnly] public ComponentLookup<Parent> ParentLookup;
 
-            private void Execute([ChunkIndexInQuery] int chunkIndex, ref DetachFromParentState state, in TrackBinding binding)
+            private void Execute([ChunkIndexInQuery] int chunkIndex, ref DetachFromParentState state,
+                in TrackBinding binding)
             {
                 var target = binding.Value;
 
@@ -56,9 +57,7 @@ namespace BovineLabs.Timeline.Parenting
                 state.RuntimeParent = parent.Value;
 
                 if (LocalTransformLookup.TryGetComponent(target, out var originalLT))
-                {
                     state.OriginalLocalTransform = originalLT;
-                }
 
                 if (LocalToWorldLookup.TryGetComponent(target, out var targetLtw))
                 {
@@ -77,7 +76,8 @@ namespace BovineLabs.Timeline.Parenting
         {
             public EntityCommandBuffer.ParallelWriter ECB;
 
-            private void Execute([ChunkIndexInQuery] int chunkIndex, in DetachFromParentState state, in TrackBinding binding)
+            private void Execute([ChunkIndexInQuery] int chunkIndex, in DetachFromParentState state,
+                in TrackBinding binding)
             {
                 var target = binding.Value;
 

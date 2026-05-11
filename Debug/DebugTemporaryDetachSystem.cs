@@ -50,7 +50,7 @@ namespace BovineLabs.Timeline.Parenting.Debug
                     !LtwLookup.TryGetComponent(target, out var targetLtw) ||
                     !LtwLookup.TryGetComponent(parent, out var parentLtw)
                 ) return;
-                
+
                 Drawer.Line(targetLtw.Position, parentLtw.Position, Color.cyan);
                 Drawer.Point(targetLtw.Position, 0.05f, Color.cyan);
                 Drawer.Text32(targetLtw.Position + new float3(0, 0.2f, 0), "Detached", Color.cyan, 12f);
