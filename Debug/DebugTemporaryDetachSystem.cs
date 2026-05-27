@@ -1,6 +1,7 @@
 #if BL_DEBUG
 using BovineLabs.Core;
 using BovineLabs.Quill;
+using BovineLabs.Timeline.Core.Debug;
 using BovineLabs.Timeline.Data;
 using Unity.Burst;
 using Unity.Collections;
@@ -16,15 +17,16 @@ namespace BovineLabs.Timeline.Parenting.Debug
     [UpdateInGroup(typeof(DebugSystemGroup))]
     public partial struct DebugTemporaryDetachSystem : ISystem
     {
-        [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
+            state.RequireForUpdate<DrawSystem.Singleton>();
         }
 
-        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var drawer = SystemAPI.GetSingleton<DrawSystem.Singleton>().CreateDrawer();
+            if (!TimelineDebugUtility.TryGetDrawer<DebugTemporaryDetachSystem>(true, out var drawer))
+                return;
+
             state.Dependency = new DebugDrawJob
             {
                 Drawer = drawer,
@@ -53,7 +55,9 @@ namespace BovineLabs.Timeline.Parenting.Debug
 
                 Drawer.Line(targetLtw.Position, parentLtw.Position, Color.cyan);
                 Drawer.Point(targetLtw.Position, 0.05f, Color.cyan);
-                Drawer.Text32(targetLtw.Position + new float3(0, 0.2f, 0), "Detached", Color.cyan, 12f);
+                var text = new FixedString32Bytes();
+                text.Append('D'); text.Append('e'); text.Append('t'); text.Append('a'); text.Append('c'); text.Append('h'); text.Append('e'); text.Append('d');
+                Drawer.Text32(targetLtw.Position + new float3(0, 0.2f, 0), text, Color.cyan, 12f);
             }
         }
     }

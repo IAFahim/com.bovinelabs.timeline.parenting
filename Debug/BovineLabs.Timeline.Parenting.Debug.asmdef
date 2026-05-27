@@ -4,6 +4,8 @@
   "references": [
     "BovineLabs.Core",
     "BovineLabs.Core.Editor",
+    "BovineLabs.Core.Extensions",
+    "BovineLabs.Timeline.Core.Debug",
     "Scripts",
     "Scripts.Data",
     "Unity.Burst",
@@ -26,7 +28,7 @@
   "precompiledReferences": [],
   "autoReferenced": false,
   "defineConstraints": [
-    "UNITY_EDITOR || BL_DEBUG"
+    "BL_DEBUG"
   ],
   "versionDefines": [],
   "noEngineReferences": false
