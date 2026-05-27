@@ -7,6 +7,7 @@ using Unity.Transforms;
 namespace BovineLabs.Timeline.Parenting
 {
     [UpdateInGroup(typeof(TimelineComponentAnimationGroup))]
+    [Unity.Entities.WorldSystemFilter(Unity.Entities.WorldSystemFilterFlags.LocalSimulation | Unity.Entities.WorldSystemFilterFlags.ClientSimulation | Unity.Entities.WorldSystemFilterFlags.ServerSimulation)]
     public partial struct TemporaryDetachSystem : ISystem
     {
         [BurstCompile]
