@@ -22,9 +22,10 @@ namespace BovineLabs.Timeline.Parenting.Debug
             state.RequireForUpdate<DrawSystem.Singleton>();
         }
 
+        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            if (!TimelineDebugUtility.TryGetDrawer<DebugTemporaryDetachSystem>(true, out var drawer))
+            if (!TimelineDebugUtility.TryGetDrawer<DebugTemporaryDetachSystem>(ref state, true, out var drawer))
                 return;
 
             state.Dependency = new DebugDrawJob
