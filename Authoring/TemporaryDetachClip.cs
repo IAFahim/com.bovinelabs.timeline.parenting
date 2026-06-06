@@ -2,7 +2,6 @@ using BovineLabs.Core.Authoring.EntityCommands;
 using BovineLabs.Timeline.Authoring;
 using BovineLabs.Timeline.Parenting.Builders;
 using Unity.Entities;
-using Unity.Transforms;
 using UnityEngine.Timeline;
 
 namespace BovineLabs.Timeline.Parenting.Authoring

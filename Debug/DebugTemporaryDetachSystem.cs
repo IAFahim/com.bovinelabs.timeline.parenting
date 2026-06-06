@@ -57,7 +57,14 @@ namespace BovineLabs.Timeline.Parenting.Debug
                 Drawer.Line(targetLtw.Position, parentLtw.Position, Color.cyan);
                 Drawer.Point(targetLtw.Position, 0.05f, Color.cyan);
                 var text = new FixedString32Bytes();
-                text.Append('D'); text.Append('e'); text.Append('t'); text.Append('a'); text.Append('c'); text.Append('h'); text.Append('e'); text.Append('d');
+                text.Append('D');
+                text.Append('e');
+                text.Append('t');
+                text.Append('a');
+                text.Append('c');
+                text.Append('h');
+                text.Append('e');
+                text.Append('d');
                 Drawer.Text32(targetLtw.Position + new float3(0, 0.2f, 0), text, Color.cyan, 12f);
             }
         }
