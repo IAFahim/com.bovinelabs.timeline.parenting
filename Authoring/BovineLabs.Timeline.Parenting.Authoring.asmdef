@@ -13,7 +13,8 @@
     "BovineLabs.Timeline.Authoring",
     "BovineLabs.Timeline.Core.Authoring",
     "BovineLabs.Timeline.Data",
-    "BovineLabs.Timeline.Parenting"
+    "BovineLabs.Timeline.Parenting",
+    "BovineLabs.Core"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

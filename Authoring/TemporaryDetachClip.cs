@@ -1,5 +1,6 @@
 using BovineLabs.Core.Authoring.EntityCommands;
 using BovineLabs.Timeline.Authoring;
+using BovineLabs.Timeline.Parenting.Builders;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine.Timeline;
@@ -13,16 +14,9 @@ namespace BovineLabs.Timeline.Parenting.Authoring
 
         public override void Bake(Entity clipEntity, BakingContext context)
         {
-            // We do NOT guess the parent here anymore. 
-            // We just add an empty state to hold the runtime data.
+            var builder = new TemporaryDetachBuilder();
             var commands = new BakerCommands(context.Baker, clipEntity);
-
-            commands.AddComponent(new DetachFromParentState
-            {
-                RuntimeParent = Entity.Null,
-                OriginalLocalTransform = LocalTransform.Identity
-            });
-
+            builder.ApplyTo(ref commands);
             base.Bake(clipEntity, context);
         }
     }
