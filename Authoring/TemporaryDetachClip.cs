@@ -1,3 +1,4 @@
+using BovineLabs.Core.Authoring.EntityCommands;
 using BovineLabs.Timeline.Authoring;
 using Unity.Entities;
 using Unity.Transforms;
@@ -14,7 +15,9 @@ namespace BovineLabs.Timeline.Parenting.Authoring
         {
             // We do NOT guess the parent here anymore. 
             // We just add an empty state to hold the runtime data.
-            context.Baker.AddComponent(clipEntity, new DetachFromParentState
+            var commands = new BakerCommands(context.Baker, clipEntity);
+
+            commands.AddComponent(new DetachFromParentState
             {
                 RuntimeParent = Entity.Null,
                 OriginalLocalTransform = LocalTransform.Identity
