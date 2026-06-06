@@ -13,8 +13,8 @@ namespace BovineLabs.Timeline.Parenting
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var ecb = new EntityCommandBuffer(Allocator.TempJob);
-            var ecbWriter = ecb.AsParallelWriter();
+            var ecbSystem = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
+            var ecbWriter = ecbSystem.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
 
             state.Dependency = new DetachFromParentJob
             {
@@ -28,10 +28,6 @@ namespace BovineLabs.Timeline.Parenting
             {
                 ECB = ecbWriter
             }.ScheduleParallel(state.Dependency);
-
-            state.Dependency.Complete();
-            ecb.Playback(state.EntityManager);
-            ecb.Dispose();
         }
 
         [BurstCompile]
