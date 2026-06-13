@@ -1,0 +1,7 @@
+[
+  {
+    "id": "unity-track-parenting",
+    "displayName": "Track Parenting",
+    "description": "Master of TemporaryDetachTrack + TemporaryDetachClip (package com.bovinelabs.timeline.parenting) — while-clip unparenting of a SubScene-baked object from its runtime Parent then automatic reattach on clip end, the edge-triggered enter/exit state machine, the world-pose-snap-via-FromMatrix and the non-uniform-scale loss, the no-parent-at-start silent skip and destroyed-parent orphan. Portable to any project containing the package; worked example from vex-ee. Use when a designer asks to \"let this thing come off its parent for a moment, then snap back\"."
+  }
+]

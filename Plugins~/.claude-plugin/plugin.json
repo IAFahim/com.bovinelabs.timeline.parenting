@@ -1,0 +1,8 @@
+{
+  "name": "com-bovinelabs-timeline-parenting",
+  "description": "Vex Unity agent skills shipped with BovineLabs Timeline Parenting.",
+  "version": "1.0.0",
+  "author": {
+    "name": "BovineLabs"
+  }
+}
