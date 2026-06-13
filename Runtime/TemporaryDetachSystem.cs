@@ -27,7 +27,8 @@ namespace BovineLabs.Timeline.Parenting
 
             state.Dependency = new ReattachToParentJob
             {
-                ECB = ecbWriter
+                ECB = ecbWriter,
+                StorageInfoLookup = SystemAPI.GetEntityStorageInfoLookup()
             }.ScheduleParallel(state.Dependency);
         }
 
@@ -52,10 +53,14 @@ namespace BovineLabs.Timeline.Parenting
                     return;
                 }
 
-                state.RuntimeParent = parent.Value;
+                if (!LocalTransformLookup.TryGetComponent(target, out var originalLT))
+                {
+                    state.RuntimeParent = Entity.Null;
+                    return;
+                }
 
-                if (LocalTransformLookup.TryGetComponent(target, out var originalLT))
-                    state.OriginalLocalTransform = originalLT;
+                state.RuntimeParent = parent.Value;
+                state.OriginalLocalTransform = originalLT;
 
                 if (LocalToWorldLookup.TryGetComponent(target, out var targetLtw))
                 {
@@ -73,17 +78,25 @@ namespace BovineLabs.Timeline.Parenting
         private partial struct ReattachToParentJob : IJobEntity
         {
             public EntityCommandBuffer.ParallelWriter ECB;
+            [ReadOnly] public EntityStorageInfoLookup StorageInfoLookup;
 
-            private void Execute([ChunkIndexInQuery] int chunkIndex, in DetachFromParentState state,
+            private void Execute([ChunkIndexInQuery] int chunkIndex, ref DetachFromParentState state,
                 in TrackBinding binding)
             {
                 var target = binding.Value;
 
-                if (state.RuntimeParent != Entity.Null)
+                if (state.RuntimeParent == Entity.Null)
+                {
+                    return;
+                }
+
+                if (StorageInfoLookup.Exists(target) && StorageInfoLookup.Exists(state.RuntimeParent))
                 {
                     ECB.SetComponent(chunkIndex, target, state.OriginalLocalTransform);
                     ECB.AddComponent(chunkIndex, target, new Parent { Value = state.RuntimeParent });
                 }
+
+                state.RuntimeParent = Entity.Null;
             }
         }
     }
