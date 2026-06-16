@@ -1,4 +1,4 @@
-#if BL_DEBUG
+#if UNITY_EDITOR || BL_DEBUG
 using BovineLabs.Core;
 using BovineLabs.Quill;
 using BovineLabs.Timeline.Core.Debug;
