@@ -25,12 +25,15 @@ namespace BovineLabs.Timeline.Parenting.Debug
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            if (!TimelineDebugUtility.TryGetDrawer<DebugTemporaryDetachSystem>(ref state, true, out var drawer))
+            if (!TimelineDebugUtility.TryGetDrawer<DebugTemporaryDetachSystem>(
+                    ref state, true, out var drawer, out var viewer, out var hasViewer))
                 return;
 
             state.Dependency = new DebugDrawJob
             {
                 Drawer = drawer,
+                Viewer = viewer,
+                HasViewer = hasViewer,
                 LtwLookup = SystemAPI.GetComponentLookup<LocalToWorld>(true)
             }.Schedule(state.Dependency);
         }
@@ -40,6 +43,8 @@ namespace BovineLabs.Timeline.Parenting.Debug
         private partial struct DebugDrawJob : IJobEntity
         {
             public Drawer Drawer;
+            public float3 Viewer;
+            public bool HasViewer;
             [ReadOnly] public ComponentLookup<LocalToWorld> LtwLookup;
 
             private void Execute(in DetachFromParentState state, in TrackBinding binding)
@@ -54,10 +59,32 @@ namespace BovineLabs.Timeline.Parenting.Debug
                     !LtwLookup.TryGetComponent(parent, out var parentLtw)
                 ) return;
 
+                var tier = TimelineDebugTier.Resolve(targetLtw.Position, Viewer, HasViewer);
+
+                // Far: the detach link — what this system does.
                 Drawer.Line(targetLtw.Position, parentLtw.Position, Color.cyan);
                 Drawer.Point(targetLtw.Position, 0.05f, Color.cyan);
-                var text = new FixedString32Bytes("Detached");
-                Drawer.Text32(targetLtw.Position + new float3(0, 0.2f, 0), text, Color.cyan, 12f);
+
+                if (tier >= DebugTier.Mid)
+                {
+                    // Mid: mark the runtime parent and one short label.
+                    Drawer.Point(parentLtw.Position, 0.05f, TimelineDebugColors.OwnerLink);
+                    var text = new FixedString32Bytes("Detached");
+                    Drawer.Text32(targetLtw.Position + new float3(0, 0.2f, 0), text, Color.cyan, 12f);
+                }
+
+                if (tier == DebugTier.Close)
+                {
+                    // Close: the parent entity index + detach distance.
+                    var readout = new FixedString128Bytes();
+                    readout.Append((FixedString32Bytes)"parent #");
+                    readout.Append(parent.Index);
+                    readout.Append((FixedString32Bytes)"  dist ");
+                    readout.Append(math.distance(targetLtw.Position, parentLtw.Position));
+                    readout.Append((FixedString32Bytes)"m");
+                    Drawer.Text128(targetLtw.Position + new float3(0, 0.45f, 0), readout,
+                        TimelineDebugColors.Label, 11f);
+                }
             }
         }
     }
