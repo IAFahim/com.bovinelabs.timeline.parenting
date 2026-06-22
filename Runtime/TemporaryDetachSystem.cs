@@ -33,11 +33,6 @@ namespace BovineLabs.Timeline.Parenting
                 StorageInfoLookup = SystemAPI.GetEntityStorageInfoLookup()
             }.ScheduleParallel(state.Dependency);
 
-            // Track each detach clip entity's captured parent/pose in an ICleanupComponentData. If the clip entity is
-            // destroyed while a detach is still active (director/sub-scene torn down or graph rebuilt before the
-            // falling edge fires), ReattachToParentJob never runs and the target stays orphaned at its frozen world
-            // pose forever. The cleanup component survives the destroy as a zombie, letting GatherDestroyedJob undo
-            // the detach on the still-live target. Mirrors TimelineEssenceStatSystem's cleanup recovery.
             state.Dependency = new AttachCleanupJob { ECB = ecbWriter }.ScheduleParallel(state.Dependency);
             state.Dependency = new SyncCleanupJob().ScheduleParallel(state.Dependency);
             state.Dependency = new GatherDestroyedJob
@@ -80,17 +75,10 @@ namespace BovineLabs.Timeline.Parenting
 
                 if (LocalToWorldLookup.TryGetComponent(target, out var targetLtw))
                 {
-                    // A non-uniform scale / shear lives in PostTransformMatrix (LocalToWorld = local * PTM).
-                    // FromMatrix collapses non-uniform scale to a single max-axis value, so strip the PTM
-                    // before decomposing and leave the PTM untouched — the detached world pose, including
-                    // non-uniform scale, is preserved instead of snapping to a wrong uniform size.
                     var rigidWorld = targetLtw.Value;
                     if (PostTransformLookup.TryGetComponent(target, out var ptm) &&
                         math.abs(math.determinant(ptm.Value)) > 1e-12f)
                     {
-                        // Only strip an INVERTIBLE PostTransformMatrix. A degenerate (zero/near-zero axis)
-                        // scale gives a singular matrix whose inverse is inf/NaN; falling back to the raw
-                        // LocalToWorld keeps a finite (max-axis-collapsed) pose instead of teleporting to NaN.
                         var candidate = math.mul(targetLtw.Value, math.inverse(ptm.Value));
                         if (math.all(math.isfinite(candidate.c0)) && math.all(math.isfinite(candidate.c1)) &&
                             math.all(math.isfinite(candidate.c2)) && math.all(math.isfinite(candidate.c3)))
@@ -109,11 +97,6 @@ namespace BovineLabs.Timeline.Parenting
         [WithAll(typeof(ClipActivePrevious))]
         private partial struct ReattachToParentJob : IJobEntity
         {
-            // DetachFromParentJob and ReattachToParentJob write into the SAME ECB parallel writer but iterate
-            // different queries, so their sortKeys overlap. When clip A reattaches and clip B detaches the same
-            // target entity in the same frame, equal sortKeys make the final Parent order-undefined. Offset the
-            // reattach sortKey into a disjoint, higher range so reattach commands deterministically sort after the
-            // detach commands of that frame. Mirrors EntityLinkParentSystem.ExitJob.ExitSortKeyOffset.
             public const int ExitSortKeyOffset = 1 << 24;
 
             public EntityCommandBuffer.ParallelWriter ECB;
@@ -124,10 +107,7 @@ namespace BovineLabs.Timeline.Parenting
             {
                 var target = binding.Value;
 
-                if (state.RuntimeParent == Entity.Null)
-                {
-                    return;
-                }
+                if (state.RuntimeParent == Entity.Null) return;
 
                 var sortKey = indexInQuery + ExitSortKeyOffset;
 
@@ -141,8 +121,6 @@ namespace BovineLabs.Timeline.Parenting
             }
         }
 
-        // Lingers on a destroyed detach clip entity as a zombie so the orphaned reparent can be undone from the
-        // still-live target. Mirrors DetachFromParentState (RuntimeParent == Entity.Null when nothing is detached).
         private struct DetachCleanup : ICleanupComponentData
         {
             public Entity Target;
@@ -150,8 +128,6 @@ namespace BovineLabs.Timeline.Parenting
             public LocalTransform OriginalLocalTransform;
         }
 
-        // Attaches the cleanup marker to every detach clip entity once, seeding it with the current capture so the
-        // undo is correct even if the entity is destroyed the same frame the marker is added.
         [BurstCompile]
         [WithNone(typeof(DetachCleanup))]
         private partial struct AttachCleanupJob : IJobEntity
@@ -170,8 +146,6 @@ namespace BovineLabs.Timeline.Parenting
             }
         }
 
-        // Keeps the zombie-surviving marker in sync with the live capture every frame. After a normal reattach
-        // clears state.RuntimeParent, this propagates the cleared value so GatherDestroyedJob becomes a no-op.
         [BurstCompile]
         private partial struct SyncCleanupJob : IJobEntity
         {
@@ -183,9 +157,6 @@ namespace BovineLabs.Timeline.Parenting
             }
         }
 
-        // Runs on clip entities destroyed while a detach was still active: the cleanup marker outlives the entity's
-        // IComponentData, so DetachFromParentState is gone. Re-add Parent + restore the captured pose on the still-
-        // live target (guarded by Exists), then release the zombie.
         [BurstCompile]
         [WithNone(typeof(DetachFromParentState))]
         private partial struct GatherDestroyedJob : IJobEntity

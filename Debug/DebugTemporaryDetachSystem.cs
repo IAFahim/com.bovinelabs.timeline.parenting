@@ -61,13 +61,11 @@ namespace BovineLabs.Timeline.Parenting.Debug
 
                 var tier = TimelineDebugTier.Resolve(targetLtw.Position, Viewer, HasViewer);
 
-                // Far: the detach link — what this system does.
                 Drawer.Line(targetLtw.Position, parentLtw.Position, Color.cyan);
                 Drawer.Point(targetLtw.Position, 0.05f, Color.cyan);
 
                 if (tier >= DebugTier.Mid)
                 {
-                    // Mid: mark the runtime parent and one short label.
                     Drawer.Point(parentLtw.Position, 0.05f, TimelineDebugColors.OwnerLink);
                     var text = new FixedString32Bytes("Detached");
                     Drawer.Text32(targetLtw.Position + new float3(0, 0.2f, 0), text, Color.cyan, 12f);
@@ -75,7 +73,6 @@ namespace BovineLabs.Timeline.Parenting.Debug
 
                 if (tier == DebugTier.Close)
                 {
-                    // Close: the parent entity index + detach distance.
                     var readout = new FixedString128Bytes();
                     readout.Append((FixedString32Bytes)"parent #");
                     readout.Append(parent.Index);
