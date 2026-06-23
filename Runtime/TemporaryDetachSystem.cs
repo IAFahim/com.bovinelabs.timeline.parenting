@@ -12,11 +12,14 @@ namespace BovineLabs.Timeline.Parenting
                        WorldSystemFilterFlags.ServerSimulation)]
     public partial struct TemporaryDetachSystem : ISystem
     {
+        private const int ExitSortKeyOffset = 1 << 24;
+
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             var ecbSystem = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
             var ecbWriter = ecbSystem.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
+            var storageInfoLookup = SystemAPI.GetEntityStorageInfoLookup();
 
             state.Dependency = new DetachFromParentJob
             {
@@ -30,7 +33,7 @@ namespace BovineLabs.Timeline.Parenting
             state.Dependency = new ReattachToParentJob
             {
                 ECB = ecbWriter,
-                StorageInfoLookup = SystemAPI.GetEntityStorageInfoLookup()
+                StorageInfoLookup = storageInfoLookup
             }.ScheduleParallel(state.Dependency);
 
             state.Dependency = new AttachCleanupJob { ECB = ecbWriter }.ScheduleParallel(state.Dependency);
@@ -38,7 +41,7 @@ namespace BovineLabs.Timeline.Parenting
             state.Dependency = new GatherDestroyedJob
             {
                 ECB = ecbWriter,
-                StorageInfoLookup = SystemAPI.GetEntityStorageInfoLookup()
+                StorageInfoLookup = storageInfoLookup
             }.ScheduleParallel(state.Dependency);
         }
 
@@ -58,34 +61,25 @@ namespace BovineLabs.Timeline.Parenting
             {
                 var target = binding.Value;
 
-                if (!ParentLookup.TryGetComponent(target, out var parent))
+                var hasParent = ParentLookup.TryGetComponent(target, out var parent);
+                var hasLocalTransform = LocalTransformLookup.TryGetComponent(target, out var originalLT);
+
+                if (!DetachTransform.TryPlanDetach(hasParent, parent.Value, hasLocalTransform, originalLT,
+                        out var plannedParent, out var plannedLocalTransform))
                 {
                     state.RuntimeParent = Entity.Null;
                     return;
                 }
 
-                if (!LocalTransformLookup.TryGetComponent(target, out var originalLT))
-                {
-                    state.RuntimeParent = Entity.Null;
-                    return;
-                }
-
-                state.RuntimeParent = parent.Value;
-                state.OriginalLocalTransform = originalLT;
+                state.RuntimeParent = plannedParent;
+                state.OriginalLocalTransform = plannedLocalTransform;
 
                 if (LocalToWorldLookup.TryGetComponent(target, out var targetLtw))
                 {
-                    var rigidWorld = targetLtw.Value;
-                    if (PostTransformLookup.TryGetComponent(target, out var ptm) &&
-                        math.abs(math.determinant(ptm.Value)) > 1e-12f)
-                    {
-                        var candidate = math.mul(targetLtw.Value, math.inverse(ptm.Value));
-                        if (math.all(math.isfinite(candidate.c0)) && math.all(math.isfinite(candidate.c1)) &&
-                            math.all(math.isfinite(candidate.c2)) && math.all(math.isfinite(candidate.c3)))
-                            rigidWorld = candidate;
-                    }
-
-                    ECB.SetComponent(indexInQuery, target, LocalTransform.FromMatrix(rigidWorld));
+                    var hasPostTransform = PostTransformLookup.TryGetComponent(target, out var ptm);
+                    var detachLocalTransform = DetachTransform.ResolveDetachLocalTransform(targetLtw.Value,
+                        hasPostTransform, ptm.Value);
+                    ECB.SetComponent(indexInQuery, target, detachLocalTransform);
                 }
 
                 ECB.RemoveComponent<Parent>(indexInQuery, target);
@@ -97,8 +91,6 @@ namespace BovineLabs.Timeline.Parenting
         [WithAll(typeof(ClipActivePrevious))]
         private partial struct ReattachToParentJob : IJobEntity
         {
-            public const int ExitSortKeyOffset = 1 << 24;
-
             public EntityCommandBuffer.ParallelWriter ECB;
             [ReadOnly] public EntityStorageInfoLookup StorageInfoLookup;
 
@@ -111,7 +103,8 @@ namespace BovineLabs.Timeline.Parenting
 
                 var sortKey = indexInQuery + ExitSortKeyOffset;
 
-                if (StorageInfoLookup.Exists(target) && StorageInfoLookup.Exists(state.RuntimeParent))
+                if (DetachTransform.ShouldReattach(state.RuntimeParent, StorageInfoLookup.Exists(target),
+                        StorageInfoLookup.Exists(state.RuntimeParent)))
                 {
                     ECB.SetComponent(sortKey, target, state.OriginalLocalTransform);
                     ECB.AddComponent(sortKey, target, new Parent { Value = state.RuntimeParent });
@@ -166,10 +159,10 @@ namespace BovineLabs.Timeline.Parenting
 
             private void Execute([EntityIndexInQuery] int indexInQuery, Entity clipEntity, in DetachCleanup cleanup)
             {
-                if (cleanup.RuntimeParent != Entity.Null &&
-                    StorageInfoLookup.Exists(cleanup.Target) && StorageInfoLookup.Exists(cleanup.RuntimeParent))
+                if (DetachTransform.ShouldReattach(cleanup.RuntimeParent, StorageInfoLookup.Exists(cleanup.Target),
+                        StorageInfoLookup.Exists(cleanup.RuntimeParent)))
                 {
-                    var sortKey = indexInQuery + ReattachToParentJob.ExitSortKeyOffset;
+                    var sortKey = indexInQuery + ExitSortKeyOffset;
                     ECB.SetComponent(sortKey, cleanup.Target, cleanup.OriginalLocalTransform);
                     ECB.AddComponent(sortKey, cleanup.Target, new Parent { Value = cleanup.RuntimeParent });
                 }

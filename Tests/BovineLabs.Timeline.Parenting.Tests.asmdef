@@ -1,0 +1,29 @@
+{
+  "name": "BovineLabs.Timeline.Parenting.Tests",
+  "rootNamespace": "BovineLabs.Timeline.Parenting.Tests",
+  "references": [
+    "BovineLabs.Timeline.Parenting",
+    "Unity.Burst",
+    "Unity.Collections",
+    "Unity.Entities",
+    "Unity.Mathematics",
+    "Unity.Transforms",
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": true,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll"
+  ],
+  "autoReferenced": false,
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS"
+  ],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
