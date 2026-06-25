@@ -67,7 +67,7 @@ namespace BovineLabs.Timeline.Parenting.Debug
                 if (tier >= DebugTier.Mid)
                 {
                     Drawer.Point(parentLtw.Position, 0.05f, TimelineDebugColors.OwnerLink);
-                    var text = new FixedString32Bytes("Detached");
+                    var text = (FixedString32Bytes)"Detached";
                     Drawer.Text32(targetLtw.Position + new float3(0, 0.2f, 0), text, Color.cyan, 12f);
                 }
 
