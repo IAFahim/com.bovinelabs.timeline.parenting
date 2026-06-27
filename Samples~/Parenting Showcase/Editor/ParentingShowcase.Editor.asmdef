@@ -1,0 +1,33 @@
+{
+    "name": "BovineLabs.Timeline.Parenting.Sample.ParentingShowcase",
+    "rootNamespace": "",
+    "references": [
+        "BovineLabs.Timeline.Parenting.Authoring",
+        "BovineLabs.Timeline.Parenting",
+        "BovineLabs.Timeline.Transform.Authoring",
+        "BovineLabs.Timeline.Transform",
+        "BovineLabs.Timeline.Core.Authoring",
+        "BovineLabs.Timeline.Authoring",
+        "BovineLabs.Timeline.Data",
+        "BovineLabs.Core",
+        "BovineLabs.Core.Authoring",
+        "Unity.Mathematics",
+        "Unity.Entities",
+        "Unity.Collections",
+        "Unity.Scenes",
+        "Unity.Timeline",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

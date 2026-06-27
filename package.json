@@ -26,6 +26,11 @@
       "displayName": "Parenting",
       "description": "Example scene showing temporary detach/reparent via timeline tracks.",
       "path": "Samples~/Parenting"
+    },
+    {
+      "displayName": "Parenting Showcase",
+      "description": "TemporaryDetach timeline patterns (Momentary / Sequential / Looped) on a grid of detaching, reparenting rigs.",
+      "path": "Samples~/Parenting Showcase"
     }
   ]
 }
